@@ -1,0 +1,1801 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+    <title>Ask-Tiffany 車險報價申請 — ask-tiffany.com</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              navy: '#0c1526',
+              accent: '#ff6b35',
+              surface: '#121f36'
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      :root {
+        --bg-deep: #070d18;
+        --bg-card: #0f1a2e;
+        --bg-input: #121f36;
+        --accent: #ff6b35;
+        --accent-soft: rgba(255, 107, 53, 0.18);
+        --grid-line: rgba(96, 165, 250, 0.07);
+      }
+      .page-shell {
+        min-height: 100vh;
+        background-color: var(--bg-deep);
+        background-image: linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+        background-size: 40px 40px;
+        background-attachment: fixed;
+      }
+      .form-card {
+        border-radius: 1rem;
+        background: linear-gradient(165deg, rgba(19, 32, 57, 0.92) 0%, rgba(10, 18, 34, 0.98) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.09);
+        box-shadow: 0 28px 80px -24px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+      }
+      .form-steps {
+        display: grid;
+      }
+      .step-panel {
+        grid-area: 1 / 1;
+        opacity: 0;
+        transform: translateY(12px);
+        transition: opacity 180ms ease, transform 180ms ease;
+        pointer-events: none;
+        visibility: hidden;
+      }
+      .step-panel.active {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+        visibility: visible;
+        z-index: 1;
+      }
+      .ui-label {
+        display: block;
+        margin-bottom: 0.375rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: #cbd5e1;
+      }
+      .ui-input,
+      .ui-select,
+      .ui-textarea {
+        width: 100%;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(56, 189, 248, 0.22);
+        background: var(--bg-input);
+        color: #f1f5f9;
+        padding: 0.625rem 0.875rem;
+        font-size: 0.9375rem;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+      }
+      .ui-input::placeholder,
+      .ui-textarea::placeholder {
+        color: #64748b;
+      }
+      .ui-input:focus,
+      .ui-select:focus,
+      .ui-textarea:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+      }
+      .ui-select,
+      select.ui-input {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.65rem center;
+        background-size: 1rem;
+        padding-right: 2.25rem;
+      }
+      select.ui-input option {
+        background-color: var(--bg-input);
+        color: #f1f5f9;
+      }
+      .panel-soft {
+        border-radius: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .segment-group {
+        display: flex;
+        gap: 0.75rem;
+      }
+      .segment-opt {
+        flex: 1;
+        cursor: pointer;
+      }
+      .segment-opt input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .segment-face {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        background: var(--bg-input);
+        padding: 0.875rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #cbd5e1;
+        transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+      }
+      .segment-opt input:focus-visible + .segment-face {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      .segment-opt input:checked + .segment-face {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+        color: #fff;
+      }
+      .progress-step:last-child .progress-connector {
+        display: none;
+      }
+      .step-dot {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        border: 2px solid rgba(255, 255, 255, 0.18);
+        background: rgba(18, 31, 54, 0.95);
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: #94a3b8;
+        transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+      }
+      .step-dot.step-dot--current {
+        border-color: var(--accent);
+        background: var(--accent);
+        color: #fff;
+        box-shadow: 0 0 22px rgba(255, 107, 53, 0.35);
+      }
+      .step-dot.step-dot--done {
+        border-color: rgba(255, 107, 53, 0.55);
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+      .step-dot.step-dot--todo {
+        border-color: rgba(255, 255, 255, 0.12);
+        background: rgba(15, 26, 46, 0.85);
+        color: #64748b;
+      }
+      .step-dot:disabled:not(.step-dot--current) {
+        cursor: default;
+        opacity: 0.55;
+      }
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      .toggle-track {
+        width: 3.5rem;
+        height: 2rem;
+        border-radius: 9999px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.08);
+        transition: background-color 150ms ease, border-color 150ms ease;
+      }
+      .toggle-track.on {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+      .toggle-thumb {
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 9999px;
+        background: #fff;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        transform: translateX(0.25rem);
+        transition: transform 150ms ease;
+      }
+      .toggle-track.on .toggle-thumb {
+        transform: translateX(1.75rem);
+        border-color: #fff;
+      }
+      .checkmark-circle {
+        stroke: #34d399;
+        stroke-width: 3;
+        fill: none;
+      }
+      .checkmark-check {
+        stroke: #34d399;
+        stroke-width: 3;
+        fill: none;
+        stroke-dasharray: 48;
+        stroke-dashoffset: 48;
+        animation: draw-check 0.6s ease forwards 0.2s;
+      }
+      @keyframes draw-check {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      .spinner {
+        width: 1.25rem;
+        height: 1.25rem;
+        border: 2px solid rgba(255, 255, 255, 0.35);
+        border-top-color: #fff;
+        border-radius: 9999px;
+        animation: spin 0.7s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .req-star {
+        color: var(--accent);
+        margin-left: 0.125rem;
+        font-weight: 700;
+      }
+      .submit-cta-on {
+        border: 1px solid transparent;
+        background: linear-gradient(180deg, #ff7a45 0%, var(--accent) 100%);
+        color: #fff;
+        box-shadow: 0 12px 36px -12px rgba(255, 107, 53, 0.65);
+      }
+      .submit-cta-off {
+        cursor: not-allowed;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.06);
+        color: #64748b;
+      }
+    </style>
+  </head>
+  <body class="page-shell antialiased text-slate-100">
+    <header class="sticky top-0 z-20 border-b border-white/10 bg-[#070d18]/90 backdrop-blur-md">
+      <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4">
+        <div class="flex items-center gap-3">
+          <div
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-orange-600 text-sm font-black uppercase tracking-tighter text-white shadow-lg shadow-orange-900/50"
+            aria-hidden="true"
+          >
+            AT
+          </div>
+          <div>
+            <p class="text-lg font-bold tracking-tight text-white" data-i18n="brand_title">ask-tiffany.com</p>
+            <p class="text-xs text-slate-400" data-i18n="brand_sub">Ask-Tiffany Independent Auto Insurance Quote</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center justify-end gap-3">
+          <span class="rounded-full border border-emerald-400/35 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400" data-i18n="badge_secure">Secure &amp; free</span>
+          <div class="flex items-center gap-0.5 rounded-xl border border-white/15 bg-white/5 p-1 text-xs font-semibold">
+            <button type="button" id="lang-en" class="rounded-lg px-3 py-1.5 text-slate-400 transition-colors" aria-pressed="true">EN</button>
+            <button type="button" id="lang-zh" class="rounded-lg px-3 py-1.5 text-slate-400 transition-colors" aria-pressed="false">繁體中文</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="relative mx-auto max-w-xl px-4 pb-16 pt-8">
+      <div id="hero-block" class="mb-8 text-center">
+        <p
+          class="mb-4 inline-flex items-center gap-2 rounded-full border border-accent/45 bg-accent/10 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-accent"
+          data-i18n="hero_badge"
+        >
+          Licensed agent • bilingual quote
+        </p>
+        <h1 class="text-balance text-3xl font-bold leading-tight text-white sm:text-[2rem]">
+          <span data-i18n="hero_head_a">Auto coverage that fits </span><span class="text-accent" data-i18n="hero_head_b">your budget.</span>
+        </h1>
+        <p class="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-slate-400 sm:text-base" data-i18n="hero_sub">Five quick steps — no obligation.</p>
+        <div class="mx-auto mt-6 flex max-w-lg flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-400 sm:text-sm">
+          <span data-i18n="trust_reviews">★★★★★ 5.0</span>
+          <span data-i18n="trust_fast">⏱ Fast estimate</span>
+          <span data-i18n="trust_nospam">✓ No spam, ever</span>
+        </div>
+      </div>
+
+      <!-- Success (hidden until submit ok) -->
+      <section id="success-panel" class="form-card mb-8 hidden px-6 py-12 text-center shadow-2xl shadow-black/40" aria-live="polite">
+        <div class="mx-auto mb-6 flex justify-center">
+          <svg width="72" height="72" viewBox="0 0 72 72" aria-hidden="true">
+            <circle class="checkmark-circle" cx="36" cy="36" r="30" />
+            <path class="checkmark-check" d="M20 38 L32 50 L52 26" />
+          </svg>
+        </div>
+        <h2 id="success-headline" class="text-2xl font-bold text-white">Thank You!</h2>
+        <p class="mt-2 text-slate-400" data-i18n="success_sub">We'll be in touch within 1 business hour.</p>
+      </section>
+
+      <!-- Form -->
+      <form id="lead-form" class="form-card pb-[40vh] shadow-2xl shadow-black/40" novalidate>
+        <div class="border-b border-white/10 px-5 pb-5 pt-6">
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-500" id="step-kicker">Section 1 of 2</p>
+            <p class="text-sm font-semibold text-slate-200" id="step-indicator" aria-live="polite">Step 1 of 5</p>
+          </div>
+          <nav aria-label="Form progress">
+            <ol class="flex w-full items-center" id="progress-steps">
+              <li class="progress-step flex min-w-0 flex-1 items-center">
+                <button type="button" data-step-link="1" class="step-dot step-dot--current h-10 w-10 shrink-0">
+                  <span class="step-num">1</span>
+                  <span class="step-check hidden text-base leading-none">✓</span>
+                </button>
+                <span class="progress-connector mx-2 hidden h-[3px] min-w-[6px] flex-1 rounded-full bg-white/15 sm:block" aria-hidden="true"></span>
+              </li>
+              <li class="progress-step flex min-w-0 flex-1 items-center">
+                <button type="button" data-step-link="2" class="step-dot step-dot--todo h-10 w-10 shrink-0" disabled>
+                  <span class="step-num">2</span>
+                  <span class="step-check hidden text-base leading-none">✓</span>
+                </button>
+                <span class="progress-connector mx-2 hidden h-[3px] min-w-[6px] flex-1 rounded-full bg-white/15 sm:block" aria-hidden="true"></span>
+              </li>
+              <li class="progress-step flex min-w-0 flex-1 items-center">
+                <button type="button" data-step-link="3" class="step-dot step-dot--todo h-10 w-10 shrink-0" disabled>
+                  <span class="step-num">3</span>
+                  <span class="step-check hidden text-base leading-none">✓</span>
+                </button>
+                <span class="progress-connector mx-2 hidden h-[3px] min-w-[6px] flex-1 rounded-full bg-white/15 sm:block" aria-hidden="true"></span>
+              </li>
+              <li class="progress-step flex min-w-0 flex-1 items-center">
+                <button type="button" data-step-link="4" class="step-dot step-dot--todo h-10 w-10 shrink-0" disabled>
+                  <span class="step-num">4</span>
+                  <span class="step-check hidden text-base leading-none">✓</span>
+                </button>
+                <span class="progress-connector mx-2 hidden h-[3px] min-w-[6px] flex-1 rounded-full bg-white/15 sm:block" aria-hidden="true"></span>
+              </li>
+              <li class="progress-step flex min-w-0 flex-1 items-center">
+                <button type="button" data-step-link="5" class="step-dot step-dot--todo h-10 w-10 shrink-0" disabled>
+                  <span class="step-num">5</span>
+                  <span class="step-check hidden text-base leading-none">✓</span>
+                </button>
+              </li>
+            </ol>
+          </nav>
+        </div>
+        <div class="form-steps px-5 py-6">
+          <!-- Step 1: Section 1 — applicant -->
+          <section class="step-panel active" data-step="1" aria-labelledby="step1-title">
+            <h2 id="step1-title" class="mb-1 text-xl font-bold tracking-tight text-white" data-i18n="step1_title">Ask-Tiffany auto quote</h2>
+            <p class="mb-5 text-sm text-slate-400" data-i18n="step1_desc">Primary insured — required fields are marked with *</p>
+            <div class="space-y-4">
+              <div>
+                <label class="ui-label" for="fullName"
+                  ><span data-i18n="lbl_fullName">Legal full name</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <input id="fullName" name="fullName" type="text" autocomplete="name" class="ui-input" />
+                <p id="err-fullName" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="sex"
+                  ><span data-i18n="lbl_sex">Sex</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <select id="sex" name="sex" class="ui-input">
+                  <option value="" disabled selected data-i18n-placeholder>Select…</option>
+                  <option value="Male" data-i18n-opt="opt_sex_male">Male</option>
+                  <option value="Female" data-i18n-opt="opt_sex_female">Female</option>
+                </select>
+                <p id="err-sex" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="email"
+                  ><span data-i18n="lbl_email">Email</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <input id="email" name="email" type="email" inputmode="email" autocomplete="email" class="ui-input" />
+                <p id="err-email" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="phone"
+                  ><span data-i18n="lbl_phone">Phone</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="14" class="ui-input" />
+                <p id="err-phone" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="insuredAddress"
+                  ><span data-i18n="lbl_address">Insured address</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <textarea id="insuredAddress" name="insuredAddress" rows="2" autocomplete="street-address" class="ui-textarea"></textarea>
+                <p id="err-insuredAddress" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="dob"
+                  ><span data-i18n="lbl_dob">Date of birth</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <input id="dob" name="dob" type="text" inputmode="numeric" placeholder="MM/DD/YYYY" maxlength="10" autocomplete="bday" class="ui-input" />
+                <p id="err-dob" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="maritalStatus"
+                  ><span data-i18n="lbl_marital">Marriage status</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <select id="maritalStatus" name="maritalStatus" class="ui-input">
+                  <option value="" disabled selected data-i18n-placeholder>Select…</option>
+                  <option value="Married" data-i18n-opt="opt_ms_married">Married</option>
+                  <option value="Single" data-i18n-opt="opt_ms_single">Single</option>
+                  <option value="Domestic Partner" data-i18n-opt="opt_ms_dp">Domestic partner</option>
+                  <option value="Divorced" data-i18n-opt="opt_ms_div">Divorced</option>
+                  <option value="Separated" data-i18n-opt="opt_ms_sep">Separated</option>
+                </select>
+                <p id="err-maritalStatus" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="occupation"
+                  ><span data-i18n="lbl_occ">Occupation</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <input id="occupation" name="occupation" type="text" autocomplete="organization-title" class="ui-input" />
+                <p id="err-occupation" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="driverLicense"
+                  ><span data-i18n="lbl_dl">Driver license</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <input id="driverLicense" name="driverLicense" type="text" autocomplete="off" class="ui-input" />
+                <p id="err-driverLicense" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 2: Vehicle 1 + household -->
+          <section class="step-panel" data-step="2" aria-labelledby="step2-title">
+            <h2 id="step2-title" class="mb-1 text-xl font-bold tracking-tight text-white" data-i18n="step2_title">Vehicle & household</h2>
+            <p class="mb-5 text-sm text-slate-400" data-i18n="step2_sub">Your first vehicle and household size.</p>
+            <div class="space-y-4">
+              <div class="panel-soft flex items-start gap-3 px-4 py-3">
+                <input id="noVin" name="noVin" type="checkbox" class="mt-1 h-4 w-4 rounded border-white/25 bg-surface text-accent focus:ring-accent" />
+                <label for="noVin" class="text-sm text-slate-200" data-i18n="lbl_no_vin">I don't have my VIN handy</label>
+              </div>
+              <div id="vin-wrap">
+                <label class="ui-label" for="vin"
+                  ><span data-i18n="lbl_vin1">1st VIN</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <input id="vin" name="vin" type="text" autocomplete="off" class="ui-input uppercase tracking-wide" />
+                <p id="err-vin" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div id="ymm-wrap" class="hidden space-y-4">
+                <div>
+                  <label class="ui-label" for="vehicleYear" data-i18n="lbl_year">Year</label>
+                  <input id="vehicleYear" name="vehicleYear" type="number" inputmode="numeric" min="1980" max="2099" step="1" class="ui-input" />
+                  <p id="err-vehicleYear" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+                </div>
+                <div>
+                  <label class="ui-label" for="vehicleMake" data-i18n="lbl_make">Make</label>
+                  <input id="vehicleMake" name="vehicleMake" type="text" class="ui-input" />
+                  <p id="err-vehicleMake" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+                </div>
+                <div>
+                  <label class="ui-label" for="vehicleModel" data-i18n="lbl_model">Model</label>
+                  <input id="vehicleModel" name="vehicleModel" type="text" class="ui-input" />
+                  <p id="err-vehicleModel" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+                </div>
+              </div>
+              <div>
+                <label class="ui-label" for="primaryUse"
+                  ><span data-i18n="lbl_primary">Primary use</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <select id="primaryUse" name="primaryUse" class="ui-input">
+                  <option value="" disabled selected data-i18n-placeholder>Select…</option>
+                  <option value="Commute" data-i18n-opt="opt_use_commute">Commute / school</option>
+                  <option value="Business" data-i18n-opt="opt_use_biz">Uber, Lyft, or other business</option>
+                  <option value="Pleasure" data-i18n-opt="opt_use_pleasure">Pleasure / errands</option>
+                </select>
+                <p id="err-primaryUse" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="householdResidents"
+                  ><span data-i18n="lbl_hh">Household residents</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <input id="householdResidents" name="householdResidents" type="number" inputmode="numeric" min="1" step="1" value="1" class="ui-input" />
+                <p id="err-householdResidents" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 3: Co-insureds & extra vehicles -->
+          <section class="step-panel" data-step="3" aria-labelledby="step3-title">
+            <h2 id="step3-title" class="mb-1 text-xl font-bold tracking-tight text-white" data-i18n="step3_title">Co-insureds &amp; more vehicles</h2>
+            <p class="mb-5 text-sm text-slate-400" data-i18n="step3_sub">Optional — enable only if this applies to you.</p>
+            <div class="space-y-6">
+              <div class="panel-soft px-4 py-3 text-sm leading-relaxed text-slate-300" data-i18n="co_help">Check the box if you need a 2nd or 3rd vehicle / driver. Required starred fields apply only when that section is enabled.</div>
+
+              <div class="panel-soft flex items-start gap-3 px-4 py-3">
+                <input id="hasSecondVehicle" name="hasSecondVehicle" type="checkbox" class="mt-1 h-4 w-4 rounded border-white/25 bg-surface text-accent focus:ring-accent" />
+                <label for="hasSecondVehicle" class="text-sm font-medium text-slate-200" data-i18n="lbl_add_second">Add 1st co-insured / 2nd vehicle</label>
+              </div>
+              <div id="block-second" class="hidden space-y-4 border-l-2 border-accent/60 pl-4">
+                <p class="text-xs font-bold uppercase tracking-wider text-accent/90" data-i18n="co1_heading">1st co-insured &amp; 2nd VIN</p>
+                <div>
+                  <label class="ui-label" for="co1Name"><span data-i18n="lbl_co1_name">1st co-insured name</span></label>
+                  <input id="co1Name" name="co1Name" type="text" class="ui-input" />
+                </div>
+                <div>
+                  <label class="ui-label" for="co1Dob"><span data-i18n="lbl_co1_dob">1st co-insured birthday</span></label>
+                  <input id="co1Dob" name="co1Dob" type="text" inputmode="numeric" placeholder="MM/DD/YYYY" maxlength="10" class="ui-input" />
+                  <p id="err-co1Dob" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+                </div>
+                <div>
+                  <label class="ui-label" for="co1Occ"><span data-i18n="lbl_co1_occ">1st co-insured occupation</span></label>
+                  <input id="co1Occ" name="co1Occ" type="text" class="ui-input" />
+                </div>
+                <div>
+                  <label class="ui-label" for="co1Marital"
+                    ><span data-i18n="lbl_co1_marital">1st co-insured marriage status</span><span class="req-star" aria-hidden="true">*</span></label
+                  >
+                  <select id="co1Marital" name="co1Marital" class="ui-input">
+                    <option value="" disabled selected data-i18n-placeholder>Select…</option>
+                    <option value="Married" data-i18n-opt="opt_ms_married">Married</option>
+                    <option value="Single" data-i18n-opt="opt_ms_single">Single</option>
+                    <option value="Domestic Partner" data-i18n-opt="opt_ms_dp">Domestic partner</option>
+                    <option value="Divorced" data-i18n-opt="opt_ms_div">Divorced</option>
+                    <option value="Separated" data-i18n-opt="opt_ms_sep">Separated</option>
+                  </select>
+                  <p id="err-co1Marital" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+                </div>
+                <div>
+                  <label class="ui-label" for="co1Dl"
+                    ><span data-i18n="lbl_co1_dl">1st co-insured driver license</span><span class="req-star" aria-hidden="true">*</span></label
+                  >
+                  <input id="co1Dl" name="co1Dl" type="text" class="ui-input" />
+                  <p id="err-co1Dl" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+                </div>
+                <div>
+                  <label class="ui-label" for="vin2"
+                    ><span data-i18n="lbl_vin2">2nd vehicle VIN</span><span class="req-star" aria-hidden="true">*</span></label
+                  >
+                  <input id="vin2" name="vin2" type="text" autocomplete="off" class="ui-input uppercase tracking-wide" />
+                  <p id="err-vin2" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+                </div>
+                <div>
+                  <label class="ui-label" for="vehicle2Use"><span data-i18n="lbl_v2_use">2nd vehicle primary use</span></label>
+                  <select id="vehicle2Use" name="vehicle2Use" class="ui-input">
+                    <option value="" selected data-i18n-placeholder>Select…</option>
+                    <option value="Commute" data-i18n-opt="opt_use_commute">Commute / school</option>
+                    <option value="Business" data-i18n-opt="opt_use_biz">Uber, Lyft, or other business</option>
+                    <option value="Pleasure" data-i18n-opt="opt_use_pleasure">Pleasure / errands</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="panel-soft flex items-start gap-3 px-4 py-3">
+                <input id="hasThirdVehicle" name="hasThirdVehicle" type="checkbox" class="mt-1 h-4 w-4 rounded border-white/25 bg-surface text-accent focus:ring-accent" />
+                <label for="hasThirdVehicle" class="text-sm font-medium text-slate-200" data-i18n="lbl_add_third">Add 2nd co-insured / 3rd vehicle</label>
+              </div>
+              <div id="block-third" class="hidden space-y-4 border-l-2 border-accent/60 pl-4">
+                <p class="text-xs font-bold uppercase tracking-wider text-accent/90" data-i18n="co2_heading">2nd co-insured &amp; 3rd VIN</p>
+                <div>
+                  <label class="ui-label" for="co2Name"><span data-i18n="lbl_co2_name">2nd co-insured name</span></label>
+                  <input id="co2Name" name="co2Name" type="text" class="ui-input" />
+                </div>
+                <div>
+                  <label class="ui-label" for="co2Dob"><span data-i18n="lbl_co2_dob">2nd co-insured birthday</span></label>
+                  <input id="co2Dob" name="co2Dob" type="text" inputmode="numeric" placeholder="MM/DD/YYYY" maxlength="10" class="ui-input" />
+                  <p id="err-co2Dob" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+                </div>
+                <div>
+                  <label class="ui-label" for="co2Occ"><span data-i18n="lbl_co2_occ">2nd co-insured occupation</span></label>
+                  <input id="co2Occ" name="co2Occ" type="text" class="ui-input" />
+                </div>
+                <div>
+                  <label class="ui-label" for="co2Marital"
+                    ><span data-i18n="lbl_co2_marital">2nd co-insured marriage status</span><span class="req-star" aria-hidden="true">*</span></label
+                  >
+                  <select id="co2Marital" name="co2Marital" class="ui-input">
+                    <option value="" disabled selected data-i18n-placeholder>Select…</option>
+                    <option value="Married" data-i18n-opt="opt_ms_married">Married</option>
+                    <option value="Single" data-i18n-opt="opt_ms_single">Single</option>
+                    <option value="Domestic Partner" data-i18n-opt="opt_ms_dp">Domestic partner</option>
+                    <option value="Divorced" data-i18n-opt="opt_ms_div">Divorced</option>
+                    <option value="Separated" data-i18n-opt="opt_ms_sep">Separated</option>
+                  </select>
+                  <p id="err-co2Marital" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+                </div>
+                <div>
+                  <label class="ui-label" for="co2Dl"
+                    ><span data-i18n="lbl_co2_dl">2nd co-insured driver license</span><span class="req-star" aria-hidden="true">*</span></label
+                  >
+                  <input id="co2Dl" name="co2Dl" type="text" class="ui-input" />
+                  <p id="err-co2Dl" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+                </div>
+                <div>
+                  <label class="ui-label" for="vin3"><span data-i18n="lbl_vin3">3rd vehicle VIN</span></label>
+                  <input id="vin3" name="vin3" type="text" autocomplete="off" class="ui-input uppercase tracking-wide" />
+                </div>
+                <div>
+                  <label class="ui-label" for="vehicle3Use"><span data-i18n="lbl_v3_use">3rd vehicle primary use</span></label>
+                  <select id="vehicle3Use" name="vehicle3Use" class="ui-input">
+                    <option value="" selected data-i18n-placeholder>Select…</option>
+                    <option value="Commute" data-i18n-opt="opt_use_commute">Commute / school</option>
+                    <option value="Business" data-i18n-opt="opt_use_biz">Uber, Lyft, or other business</option>
+                    <option value="Pleasure" data-i18n-opt="opt_use_pleasure">Pleasure / errands</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 4: Coverage -->
+          <section class="step-panel" data-step="4" aria-labelledby="step4-title">
+            <h2 id="step4-title" class="mb-1 text-xl font-bold tracking-tight text-white" data-i18n="step4_title">Coverage</h2>
+            <p class="mb-5 text-sm text-slate-400" data-i18n="step4_sub">Limits and deductibles for your quote.</p>
+            <div class="space-y-4">
+              <div>
+                <label class="ui-label" for="priorCarrier"><span data-i18n="lbl_prior">Prior carrier</span></label>
+                <input id="priorCarrier" name="priorCarrier" type="text" class="ui-input" />
+              </div>
+              <div>
+                <label class="ui-label" for="policyExpiration"
+                  ><span data-i18n="lbl_pexp">Prior policy expiration</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <input id="policyExpiration" name="policyExpiration" type="text" inputmode="numeric" placeholder="MM/DD/YYYY" maxlength="10" class="ui-input" />
+                <p id="err-policyExpiration" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="priorPolicyTerm"><span data-i18n="lbl_pterm">Prior policy term</span></label>
+                <select id="priorPolicyTerm" name="priorPolicyTerm" class="ui-input">
+                  <option value="" selected data-i18n-placeholder>Select…</option>
+                  <option value="6 months" data-i18n-opt="opt_term_6">6 months</option>
+                  <option value="12 months" data-i18n-opt="opt_term_12">12 months</option>
+                </select>
+              </div>
+              <div>
+                <label class="ui-label" for="effectiveDate"
+                  ><span data-i18n="lbl_eff">New policy effective date</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <input id="effectiveDate" name="effectiveDate" type="text" inputmode="numeric" placeholder="MM/DD/YYYY" maxlength="10" class="ui-input" />
+                <p id="err-effectiveDate" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="coverageBI"
+                  ><span data-i18n="lbl_bi">Bodily injury</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <select id="coverageBI" name="coverageBI" class="ui-input">
+                  <option value="" disabled selected data-i18n-placeholder>Select…</option>
+                  <option value="30/60">30/60</option>
+                  <option value="50/50">50/50</option>
+                  <option value="50/100">50/100</option>
+                  <option value="100/100">100/100</option>
+                  <option value="100/300">100/300</option>
+                  <option value="250/500">250/500</option>
+                </select>
+                <p id="err-coverageBI" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="coveragePD"
+                  ><span data-i18n="lbl_pd">Property damage</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <select id="coveragePD" name="coveragePD" class="ui-input">
+                  <option value="" disabled selected data-i18n-placeholder>Select…</option>
+                  <option value="25k" data-i18n-opt="opt_lim_25k">25k</option>
+                  <option value="50k" data-i18n-opt="opt_lim_50k">50k</option>
+                  <option value="100k" data-i18n-opt="opt_lim_100k">100k</option>
+                  <option value="250k" data-i18n-opt="opt_lim_250k">250k</option>
+                </select>
+                <p id="err-coveragePD" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="coverageUMBI"
+                  ><span data-i18n="lbl_umbi">Uninsured motorist bodily injury</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <select id="coverageUMBI" name="coverageUMBI" class="ui-input">
+                  <option value="" disabled selected data-i18n-placeholder>Select…</option>
+                  <option value="30/60">30/60</option>
+                  <option value="50/50">50/50</option>
+                  <option value="50/100">50/100</option>
+                  <option value="100/100">100/100</option>
+                  <option value="100/300">100/300</option>
+                  <option value="250/500">250/500</option>
+                </select>
+                <p id="err-coverageUMBI" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="coverageUMPD"
+                  ><span data-i18n="lbl_umpd">Uninsured motorist property damage</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <select id="coverageUMPD" name="coverageUMPD" class="ui-input">
+                  <option value="" disabled selected data-i18n-placeholder>Select…</option>
+                  <option value="25k" data-i18n-opt="opt_lim_25k">25k</option>
+                  <option value="50k" data-i18n-opt="opt_lim_50k">50k</option>
+                  <option value="100k" data-i18n-opt="opt_lim_100k">100k</option>
+                  <option value="250k" data-i18n-opt="opt_lim_250k">250k</option>
+                </select>
+                <p id="err-coverageUMPD" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="deathIndemnity"><span data-i18n="lbl_death">Auto death indemnity</span></label>
+                <select id="deathIndemnity" name="deathIndemnity" class="ui-input">
+                  <option value="" selected data-i18n-placeholder>Select…</option>
+                  <option value="No coverage" data-i18n-opt="opt_death_none">No coverage</option>
+                  <option value="5000" data-i18n-opt="opt_death_5k">5000</option>
+                  <option value="10000" data-i18n-opt="opt_death_10k">10000</option>
+                </select>
+              </div>
+              <div>
+                <label class="ui-label" for="coverageComp"
+                  ><span data-i18n="lbl_comp">Comprehensive deductible</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <select id="coverageComp" name="coverageComp" class="ui-input">
+                  <option value="" disabled selected data-i18n-placeholder>Select…</option>
+                  <option value="200" data-i18n-opt="opt_ded_200">200</option>
+                  <option value="250" data-i18n-opt="opt_ded_250">250</option>
+                  <option value="500" data-i18n-opt="opt_ded_500">500</option>
+                  <option value="1000" data-i18n-opt="opt_ded_1000">1000</option>
+                  <option value="2000" data-i18n-opt="opt_ded_2000">2000</option>
+                  <option value="2500" data-i18n-opt="opt_ded_2500">2500</option>
+                </select>
+                <p id="err-coverageComp" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="coverageColl"
+                  ><span data-i18n="lbl_coll">Collision deductible</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <select id="coverageColl" name="coverageColl" class="ui-input">
+                  <option value="" disabled selected data-i18n-placeholder>Select…</option>
+                  <option value="200" data-i18n-opt="opt_ded_200">200</option>
+                  <option value="250" data-i18n-opt="opt_ded_250">250</option>
+                  <option value="500" data-i18n-opt="opt_ded_500">500</option>
+                  <option value="1000" data-i18n-opt="opt_ded_1000">1000</option>
+                  <option value="2000" data-i18n-opt="opt_ded_2000">2000</option>
+                  <option value="2500" data-i18n-opt="opt_ded_2500">2500</option>
+                </select>
+                <p id="err-coverageColl" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="coverageTowing"><span data-i18n="lbl_tow">Towing &amp; labor</span></label>
+                <select id="coverageTowing" name="coverageTowing" class="ui-input">
+                  <option value="" selected data-i18n-placeholder>Select…</option>
+                  <option value="No coverage" data-i18n-opt="opt_tow_none">No coverage</option>
+                  <option value="50" data-i18n-opt="opt_tow_50">50</option>
+                  <option value="100" data-i18n-opt="opt_tow_100">100</option>
+                  <option value="200" data-i18n-opt="opt_tow_200">200</option>
+                  <option value="Unlimited" data-i18n-opt="opt_tow_unl">Unlimited</option>
+                </select>
+              </div>
+              <div>
+                <label class="ui-label" for="coverageMedPay"
+                  ><span data-i18n="lbl_med">Medical payments</span><span class="req-star" aria-hidden="true">*</span></label
+                >
+                <select id="coverageMedPay" name="coverageMedPay" class="ui-input">
+                  <option value="" disabled selected data-i18n-placeholder>Select…</option>
+                  <option value="500">500</option>
+                  <option value="1000">1000</option>
+                  <option value="2000">2000</option>
+                  <option value="3000">3000</option>
+                  <option value="5000">5000</option>
+                  <option value="10000">10000</option>
+                  <option value="No coverage" data-i18n-opt="opt_med_none">No coverage</option>
+                </select>
+                <p id="err-coverageMedPay" class="mt-1 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div>
+                <label class="ui-label" for="coverageRental"><span data-i18n="lbl_rent">Rental expense</span></label>
+                <select id="coverageRental" name="coverageRental" class="ui-input">
+                  <option value="" selected data-i18n-placeholder>Select…</option>
+                  <option value="20/600" data-i18n-opt="opt_rent_20600">20/600</option>
+                  <option value="25/750" data-i18n-opt="opt_rent_25750">25/750</option>
+                  <option value="30/900" data-i18n-opt="opt_rent_30900">30/900</option>
+                  <option value="40/1200" data-i18n-opt="opt_rent_401200">40/1200</option>
+                  <option value="50/1500" data-i18n-opt="opt_rent_501500">50/1500</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <!-- Step 5: Credit, notes, authorize -->
+          <section class="step-panel" data-step="5" aria-labelledby="step5-title">
+            <h2 id="step5-title" class="mb-1 text-xl font-bold tracking-tight text-white" data-i18n="step5_title">Credit check &amp; submit</h2>
+            <p class="mb-5 text-sm text-slate-400" data-i18n="step5_sub">Almost done — confirm consent and send.</p>
+            <div class="space-y-6">
+              <fieldset class="space-y-3" aria-labelledby="credit-legend">
+                <legend class="ui-label mb-0" id="credit-legend">
+                  <span data-i18n="lbl_credit">Credit check authorized</span><span class="req-star" aria-hidden="true">*</span>
+                </legend>
+                <p class="text-xs leading-relaxed text-slate-400" data-i18n="credit_help">For quoting, may we obtain credit &amp; underwriting reports?</p>
+                <div class="segment-group" role="radiogroup" aria-labelledby="credit-legend">
+                  <label class="segment-opt">
+                    <input type="radio" name="creditCheck" id="credit-yes" value="Yes" />
+                    <span class="segment-face"><span aria-hidden="true">✓</span> <span data-i18n="opt_credit_yes">Yes</span></span>
+                  </label>
+                  <label class="segment-opt">
+                    <input type="radio" name="creditCheck" id="credit-no" value="No" />
+                    <span class="segment-face"><span aria-hidden="true">✕</span> <span data-i18n="opt_credit_no">No</span></span>
+                  </label>
+                </div>
+                <p id="err-creditCheck" class="hidden text-sm text-red-400" role="alert"></p>
+              </fieldset>
+              <div>
+                <label class="ui-label" for="specialRequests"><span data-i18n="lbl_other">Other / special requests</span></label>
+                <p class="mb-2 text-xs text-slate-500" data-i18n="lbl_other_hint">Same coverage for all vehicles unless noted. More than four drivers: upload prior policy.</p>
+                <textarea id="specialRequests" name="specialRequests" rows="4" class="ui-textarea"></textarea>
+              </div>
+              <div class="panel-soft px-4 py-4">
+                <p id="auth-paragraph" class="mb-4 text-sm leading-relaxed text-slate-300" data-i18n="auth_text"></p>
+                <div class="flex flex-wrap items-center gap-4">
+                  <button type="button" id="auth-switch" role="switch" aria-checked="false" class="relative shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#0f1a2e]">
+                    <span class="toggle-track block"><span class="toggle-thumb block"></span></span>
+                    <span class="sr-only" data-i18n="auth_toggle_label">Authorize consumer reports</span>
+                  </button>
+                  <label for="authorized-hidden" class="text-sm font-semibold text-slate-200" data-i18n="auth_switch_cap">Authorization</label>
+                  <input type="checkbox" id="authorized-hidden" name="authorized" class="visually-hidden" />
+                </div>
+                <p id="err-authorized" class="mt-2 hidden text-sm text-red-400" role="alert"></p>
+              </div>
+              <div id="submit-feedback" class="hidden rounded-xl border border-red-500/35 bg-red-950/40 px-4 py-3 text-sm text-red-300" role="alert"></div>
+              <button type="submit" id="submit-btn" disabled class="submit-cta-off flex w-full items-center justify-center gap-2 rounded-xl px-5 py-4 text-sm font-bold transition-all">
+                <span id="submit-spinner" class="spinner hidden"></span>
+                <span id="submit-label" data-i18n="btn_submit_off">Submit application →</span>
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <!-- Nav rows per step (outside grid so layout stays consistent) -->
+        <div class="border-t border-white/10 px-5 py-5" id="step-nav">
+          <div class="flex gap-3">
+            <button
+              type="button"
+              id="btn-back"
+              class="hidden flex-1 rounded-xl border border-white/20 bg-white/5 px-4 py-3.5 text-sm font-semibold text-slate-200 transition hover:bg-white/10"
+            >
+              Back
+            </button>
+            <button type="button" id="btn-next" class="flex-1 rounded-xl bg-accent px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-900/35 transition hover:brightness-110">
+              Next
+            </button>
+          </div>
+        </div>
+      </form>
+    </main>
+
+    <footer class="mx-auto max-w-xl px-4 pb-12 pt-4 text-center text-xs leading-relaxed text-slate-500">
+      <p>
+        <span data-i18n="footer_disclosure"
+          >All quotes are estimates and not a guarantee of coverage or pricing. By submitting this form you authorize ask-tiffany.com to pull underwriting reports for insurance rating purposes.</span
+        >
+        <span class="text-slate-600"> | </span>
+        <a href="#" class="text-accent underline decoration-accent/50 underline-offset-2 hover:text-orange-300" data-i18n="footer_privacy">Privacy Policy</a>
+        <span class="text-slate-600"> | </span>
+        <a href="#" class="text-accent underline decoration-accent/50 underline-offset-2 hover:text-orange-300" data-i18n="footer_terms">Terms of Service</a>
+      </p>
+    </footer>
+
+    <script>
+      const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz664cxgQsboxF0dZnW6OzL0P36PhDUqf2hML8Oro31Cx5cRGicx2iPpaLbDZR4ZHQ1/exec'
+
+      const i18n = {
+        en: {
+          brand_title: 'ask-tiffany.com',
+          brand_sub: 'Ask-Tiffany Independent Auto Insurance Quote',
+          badge_secure: 'Secure & free',
+          hero_badge: 'Licensed agent • bilingual quote',
+          hero_head_a: 'Auto coverage that fits ',
+          hero_head_b: 'your budget.',
+          hero_sub: 'Five quick steps — no obligation.',
+          trust_reviews: '★★★★★ 5.0',
+          trust_fast: '⏱ Fast estimate',
+          trust_nospam: '✓ No spam, ever',
+          step_indicator: 'Step {n} of 5',
+          btn_continue_step: 'Continue → Step {next} of 5',
+          trust_ssl: '🔒 SSL Secured',
+          trust_agent: 'Licensed Insurance Agent',
+          prog_1: 'You',
+          prog_2: 'Vehicle',
+          prog_3: 'Drivers',
+          prog_4: 'Coverage',
+          prog_5: 'Submit',
+          sec1_kicker: 'Section 1 of 2',
+          sec2_kicker: 'Section 2 of 2',
+          step1_title: 'Ask-Tiffany quote — primary insured',
+          step1_desc: 'Fields marked * are required.',
+          step2_title: '1st vehicle & household',
+          step2_sub: 'Your first vehicle and household size.',
+          step3_title: 'Co-insureds & more vehicles',
+          step3_sub: 'Optional — enable only if this applies to you.',
+          step4_title: 'Coverage selections',
+          step4_sub: 'Limits and deductibles for your quote.',
+          step5_title: 'Credit check & submit',
+          step5_sub: 'Almost done — confirm consent and send.',
+          lbl_fullName: 'Legal full name (English)',
+          lbl_email: 'Email for policy delivery',
+          lbl_phone: "Insured's phone",
+          lbl_address: 'Insured mailing address',
+          lbl_dob: 'Date of birth',
+          lbl_sex: 'Sex',
+          lbl_marital: 'Marriage status',
+          lbl_occ: 'Occupation',
+          lbl_dl: 'Driver license number',
+          lbl_no_vin: "I don't have my VIN handy",
+          lbl_vin1: '1st vehicle VIN',
+          lbl_year: 'Year',
+          lbl_make: 'Make',
+          lbl_model: 'Model',
+          lbl_primary: 'Primary use',
+          lbl_hh: 'Household residents (drivers, excluded drivers, children, roommates)',
+          lbl_add_second: 'Add 1st co-insured / 2nd vehicle',
+          lbl_add_third: 'Add 2nd co-insured / 3rd vehicle',
+          co_help: 'Enable a section only if it applies. Starred fields in that section are required.',
+          co1_heading: '1st co-insured & 2nd vehicle',
+          lbl_co1_name: "1st co-insured name",
+          lbl_co1_dob: '1st co-insured birthday',
+          lbl_co1_occ: '1st co-insured occupation',
+          lbl_co1_marital: '1st co-insured marriage status',
+          lbl_co1_dl: '1st co-insured driver license',
+          lbl_vin2: '2nd vehicle VIN',
+          lbl_v2_use: '2nd vehicle primary use',
+          co2_heading: '2nd co-insured & 3rd vehicle',
+          lbl_co2_name: '2nd co-insured name',
+          lbl_co2_dob: '2nd co-insured birthday',
+          lbl_co2_occ: '2nd co-insured occupation',
+          lbl_co2_marital: '2nd co-insured marriage status',
+          lbl_co2_dl: '2nd co-insured driver license',
+          lbl_vin3: '3rd vehicle VIN',
+          lbl_v3_use: '3rd vehicle primary use',
+          lbl_prior: 'Prior auto carrier',
+          lbl_pexp: 'Prior policy expiration date',
+          lbl_pterm: 'Prior policy term',
+          lbl_eff: 'New policy effective date',
+          lbl_bi: 'Bodily injury liability',
+          lbl_pd: 'Property damage liability',
+          lbl_umbi: 'Uninsured motorist bodily injury',
+          lbl_umpd: 'Uninsured motorist property damage',
+          lbl_death: 'Auto death indemnity',
+          lbl_comp: 'Comprehensive deductible',
+          lbl_coll: 'Collision deductible',
+          lbl_tow: 'Towing & labor',
+          lbl_med: 'Medical payments',
+          lbl_rent: 'Rental reimbursement',
+          lbl_credit: 'Credit / underwriting reports',
+          credit_help: 'May we obtain credit and underwriting reports needed for this quote?',
+          opt_credit_yes: 'Yes',
+          opt_credit_no: 'No',
+          lbl_other: 'Other notes',
+          lbl_other_hint: 'Same coverage for all vehicles unless you describe otherwise. More than four drivers: upload your prior policy.',
+          placeholder_select: 'Select…',
+          opt_sex_male: 'Male',
+          opt_sex_female: 'Female',
+          opt_ms_single: 'Single',
+          opt_ms_married: 'Married',
+          opt_ms_dp: 'Domestic partner',
+          opt_ms_div: 'Divorced',
+          opt_ms_sep: 'Separated',
+          opt_use_commute: 'Commute / school',
+          opt_use_biz: 'Uber, Lyft, or other business',
+          opt_use_pleasure: 'Pleasure / errands',
+          opt_term_6: '6 months',
+          opt_term_12: '12 months',
+          opt_lim_25k: '25k',
+          opt_lim_50k: '50k',
+          opt_lim_100k: '100k',
+          opt_lim_250k: '250k',
+          opt_ded_200: '200',
+          opt_ded_250: '250',
+          opt_ded_500: '500',
+          opt_ded_1000: '1000',
+          opt_ded_2000: '2000',
+          opt_ded_2500: '2500',
+          opt_death_none: 'No coverage',
+          opt_death_5k: '5000',
+          opt_death_10k: '10000',
+          opt_tow_none: 'No coverage',
+          opt_tow_50: '50',
+          opt_tow_100: '100',
+          opt_tow_200: '200',
+          opt_tow_unl: 'Unlimited',
+          opt_med_none: 'No coverage',
+          opt_rent_20600: '20/600',
+          opt_rent_25750: '25/750',
+          opt_rent_30900: '30/900',
+          opt_rent_401200: '40/1200',
+          opt_rent_501500: '50/1500',
+          btn_next: 'Next',
+          btn_back: 'Back',
+          btn_submit_on: 'Submit application →',
+          btn_submit_off: 'Submit application →',
+          btn_submitting: 'Submitting…',
+          auth_text:
+            'By toggling the switch below, you authorize ask-tiffany.com and its licensed agents to obtain consumer reports, motor vehicle records, and underwriting reports for the purpose of providing an insurance quote. This is not a binding agreement.',
+          auth_toggle_label: 'Authorize consumer reports',
+          auth_switch_cap: 'Electronic signature / authorization',
+          success_sub: "We'll be in touch within 1 business hour.",
+          success_thanks: 'Thank You, {name}!',
+          footer_disclosure:
+            'All quotes are estimates and not a guarantee of coverage or pricing. By submitting this form you authorize ask-tiffany.com to pull underwriting reports for insurance rating purposes.',
+          footer_privacy: 'Privacy Policy',
+          footer_terms: 'Terms of Service',
+          err_required: 'This field is required.',
+          err_email: 'Enter a valid email address.',
+          err_phone: 'Enter a valid 10-digit phone number.',
+          err_date: 'Enter a valid date as MM/DD/YYYY.',
+          err_vin_ymm: 'Enter your VIN or complete Year, Make, and Model.',
+          err_year: 'Enter a valid 4-digit vehicle year.',
+          err_hh: 'Enter at least 1 resident.',
+          err_credit: 'Select Yes or No.',
+          err_generic: 'Something went wrong. Please try again or call us directly.',
+          err_timeout: 'Connection timed out. Your data is saved — please resubmit or call us directly.'
+        },
+        zh: {
+          brand_title: 'ask-tiffany.com',
+          brand_sub: 'Ask-Tiffany 車險報價',
+          badge_secure: '安全 • 免費',
+          hero_badge: '持牌經紀人 • 雙語報價',
+          hero_head_a: '車險保障，貼近 ',
+          hero_head_b: '您的預算。',
+          hero_sub: '五個步驟 — 無強迫推銷。',
+          trust_reviews: '★★★★★ 5.0',
+          trust_fast: '⏱ 快速試算',
+          trust_nospam: '✓ 絕不騷擾',
+          step_indicator: '第 {n} 步，共 5 步',
+          btn_continue_step: '繼續 → 第 {next} 步／共 5 步',
+          trust_ssl: '🔒 SSL 安全連線',
+          trust_agent: '持牌保險經紀人',
+          prog_1: '要保人',
+          prog_2: '車輛',
+          prog_3: '共同保險',
+          prog_4: '保障',
+          prog_5: '送出',
+          sec1_kicker: '第 1 部分（共 2）',
+          sec2_kicker: '第 2 部分（共 2）',
+          step1_title: 'Ask-Tiffany 車險報價 — 主保險人',
+          step1_desc: '標示 * 的欄位為必填（與 Google 表單相同）。',
+          step2_title: '第一輛車與家戶',
+          step2_sub: '第一部車與同住人數。',
+          step3_title: '共同保險人與其他車輛',
+          step3_sub: '選填 — 僅在適用時開啟。',
+          step4_title: '車險保障內容',
+          step4_sub: '額度與自負額。',
+          step5_title: '信用授權與送出',
+          step5_sub: '即將完成 — 確認同意並送出。',
+          lbl_fullName: '主保險人英文姓名（Legal Full Name）',
+          lbl_email: '寄送保單的電子郵件',
+          lbl_phone: '電話',
+          lbl_address: '主保險人居住地址',
+          lbl_dob: '主保險人生日',
+          lbl_sex: '性別',
+          lbl_marital: '婚姻狀況',
+          lbl_occ: '職業',
+          lbl_dl: '駕照號碼',
+          lbl_no_vin: '我手邊暫時沒有 VIN',
+          lbl_vin1: '主車 VIN（1st VIN）',
+          lbl_year: '年份',
+          lbl_make: '廠牌',
+          lbl_model: '車型',
+          lbl_primary: '主要用途',
+          lbl_hh: '家戶人數（含駕駛人、排除駕駛人、孩童、室友）',
+          lbl_add_second: '新增第一位共同保險人／第二輛車',
+          lbl_add_third: '新增第二位共同保險人／第三輛車',
+          co_help: '僅在適用時開啟區塊；該區塊內標 * 者為必填。',
+          co1_heading: '第一位共同保險人與第二輛車',
+          lbl_co1_name: '第一位共同保險人姓名',
+          lbl_co1_dob: '第一位共同保險人生日',
+          lbl_co1_occ: '第一位共同保險人職業',
+          lbl_co1_marital: '第一位共同保險人婚姻狀況',
+          lbl_co1_dl: '第一位共同保險人駕照號碼',
+          lbl_vin2: '第二台車 VIN（2nd VIN）',
+          lbl_v2_use: '第二車主要用途',
+          co2_heading: '第二位共同保險人與第三輛車',
+          lbl_co2_name: '第二位共同保險人姓名',
+          lbl_co2_dob: '第二位共同保險人生日',
+          lbl_co2_occ: '第二位共同保險人職業',
+          lbl_co2_marital: '第二位共同保險人婚姻狀況',
+          lbl_co2_dl: '第二位共同保險人駕照號碼',
+          lbl_vin3: '第三台車 VIN（3rd VIN）',
+          lbl_v3_use: '第三車主要用途',
+          lbl_prior: '前車險保險公司',
+          lbl_pexp: '前車險到期日',
+          lbl_pterm: '前車險保單期間',
+          lbl_eff: '新車險生效日',
+          lbl_bi: '他人身體傷害（BI）',
+          lbl_pd: '他人車損（PD）',
+          lbl_umbi: '無保險駕駛對要保人造成的身體傷害（UM BI）',
+          lbl_umpd: '無保險駕駛對要保人造成的車損（UM PD）',
+          lbl_death: '汽車事故造成他人亡故保障',
+          lbl_comp: '全能險（Comprehensive）自負額',
+          lbl_coll: '自車碰撞（Collision）自負額',
+          lbl_tow: '拖吊（Towing & Labor）',
+          lbl_med: '醫療給付（Medical Payments）',
+          lbl_rent: '代步車（Rental）',
+          lbl_credit: '是否同意調閱信用／核保資料',
+          credit_help: '為完成報價，是否同意調閱信用紀錄及其他核保報告？',
+          opt_credit_yes: '同意',
+          opt_credit_no: '不同意',
+          lbl_other: '其他說明',
+          lbl_other_hint: '原則上所有車輛採相同保障；有特殊需求請填寫。超過四位駕駛請上傳前保單。',
+          placeholder_select: '請選擇…',
+          opt_sex_male: '男性',
+          opt_sex_female: '女性',
+          opt_ms_single: '單身',
+          opt_ms_married: '已婚',
+          opt_ms_dp: '伴侶（Domestic Partner）',
+          opt_ms_div: '離婚',
+          opt_ms_sep: '分居',
+          opt_use_commute: '上班或上學通勤',
+          opt_use_biz: 'UBER／LYFT 等商業用途',
+          opt_use_pleasure: '休閒或偶爾採買辦事',
+          opt_term_6: '6 個月',
+          opt_term_12: '12 個月',
+          opt_lim_25k: '25k',
+          opt_lim_50k: '50k',
+          opt_lim_100k: '100k',
+          opt_lim_250k: '250k',
+          opt_ded_200: '200',
+          opt_ded_250: '250',
+          opt_ded_500: '500',
+          opt_ded_1000: '1000',
+          opt_ded_2000: '2000',
+          opt_ded_2500: '2500',
+          opt_death_none: '不保障',
+          opt_death_5k: '5000',
+          opt_death_10k: '10000',
+          opt_tow_none: '不保障',
+          opt_tow_50: '50',
+          opt_tow_100: '100',
+          opt_tow_200: '200',
+          opt_tow_unl: '無上限',
+          opt_med_none: '不保障',
+          opt_rent_20600: '20/600',
+          opt_rent_25750: '25/750',
+          opt_rent_30900: '30/900',
+          opt_rent_401200: '40/1200',
+          opt_rent_501500: '50/1500',
+          btn_next: '下一步',
+          btn_back: '上一步',
+          btn_submit_on: '提交申請 →',
+          btn_submit_off: '提交申請 →',
+          btn_submitting: '送出中…',
+          auth_text:
+            '開啟下方開關即表示您授權 ask-tiffany.com 及其持牌代理人為提供保險報價之目的，取得消費者報告、駕駛紀錄及核保相關資料。此並非具拘束力之契約。',
+          auth_toggle_label: '授權取得相關報告',
+          auth_switch_cap: '電子簽名／授權',
+          success_sub: '我們將於 1 個營業日內與您聯繫。',
+          success_thanks: '感謝您，{name}！',
+          footer_disclosure:
+            '所有報價皆為預估，不保證承保或費率。提交此表即表示您授權 ask-tiffany.com 為保險評等目的取得核保相關報告。',
+          footer_privacy: '隱私權政策',
+          footer_terms: '服務條款',
+          err_required: '此欄位為必填。',
+          err_email: '請輸入有效的電子郵件地址。',
+          err_phone: '請輸入有效的 10 位數電話號碼。',
+          err_date: '請以 MM/DD/YYYY 輸入有效日期。',
+          err_vin_ymm: '請輸入 VIN，或完整填寫年份、廠牌與車型。',
+          err_year: '請輸入有效的四位數年份。',
+          err_hh: '同住人數至少為 1。',
+          err_credit: '請選擇同意或不同意。',
+          err_generic: '發生錯誤，請再試一次或直接來電聯繫我們。',
+          err_timeout: '連線逾時。您的資料已保留 — 請重新提交或直接來電聯繫我們。'
+        }
+      };
+
+      let currentLang = 'en';
+      let currentStep = 1;
+      const formData = {};
+
+      const $ = (sel, root) => (root || document).querySelector(sel);
+      const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+
+      function t(key) {
+        return i18n[currentLang][key] || i18n.en[key] || key;
+      }
+
+      function applyI18n() {
+        $$('[data-i18n]').forEach(function (el) {
+          var k = el.getAttribute('data-i18n');
+          if (k && i18n[currentLang][k]) el.textContent = i18n[currentLang][k];
+        });
+        var authP = $('#auth-paragraph');
+        if (authP && authP.getAttribute('data-i18n') === 'auth_text') {
+          authP.textContent = t('auth_text');
+        }
+        $$('option[data-i18n-opt]').forEach(function (opt) {
+          var k = opt.getAttribute('data-i18n-opt');
+          if (k && i18n[currentLang][k]) opt.textContent = i18n[currentLang][k];
+        });
+        $$('option[data-i18n-placeholder]').forEach(function (opt) {
+          opt.textContent = t('placeholder_select');
+        });
+        var si = $('#step-indicator');
+        if (si) si.textContent = t('step_indicator').replace('{n}', String(currentStep));
+        var sk = $('#step-kicker');
+        if (sk) sk.textContent = currentStep <= 3 ? t('sec1_kicker') : t('sec2_kicker');
+        var next = $('#btn-next');
+        if (next) {
+          if (currentStep < 5) next.textContent = t('btn_continue_step').replace('{next}', String(currentStep + 1));
+          else next.textContent = '';
+        }
+        $('#btn-back').textContent = t('btn_back');
+        $('#submit-label').textContent = getSubmitLabelText();
+        updateLangButtons();
+      }
+
+      function getSubmitLabelText() {
+        var cb = $('#authorized-hidden');
+        if (!cb || !cb.checked) return t('btn_submit_off');
+        return t('btn_submit_on');
+      }
+
+      function updateLangButtons() {
+        var en = $('#lang-en');
+        var zh = $('#lang-zh');
+        en.classList.remove('bg-accent', 'text-white', 'shadow-md', 'shadow-orange-900/40');
+        zh.classList.remove('bg-accent', 'text-white', 'shadow-md', 'shadow-orange-900/40');
+        en.classList.add('text-slate-400');
+        zh.classList.add('text-slate-400');
+        if (currentLang === 'en') {
+          en.classList.remove('text-slate-400');
+          en.classList.add('bg-accent', 'text-white', 'shadow-md', 'shadow-orange-900/40');
+          en.setAttribute('aria-pressed', 'true');
+          zh.setAttribute('aria-pressed', 'false');
+        } else {
+          zh.classList.remove('text-slate-400');
+          zh.classList.add('bg-accent', 'text-white', 'shadow-md', 'shadow-orange-900/40');
+          zh.setAttribute('aria-pressed', 'true');
+          en.setAttribute('aria-pressed', 'false');
+        }
+      }
+
+      function setLang(lang) {
+        currentLang = lang;
+        document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : 'en';
+        applyI18n();
+      }
+
+      function digitsOnly(s) {
+        return String(s || '').replace(/\D/g, '');
+      }
+
+      function formatPhoneInput(el) {
+        var d = digitsOnly(el.value).slice(0, 10);
+        var out = '';
+        if (d.length > 0) out = '(' + d.substring(0, 3);
+        if (d.length >= 4) out += ') ' + d.substring(3, 6);
+        else if (d.length > 3) out += ') ' + d.substring(3);
+        if (d.length > 6) out += '-' + d.substring(6, 10);
+        el.value = out;
+      }
+
+      function formatDateInput(el) {
+        var d = digitsOnly(el.value).slice(0, 8);
+        var out = '';
+        if (d.length > 0) out = d.substring(0, 2);
+        if (d.length >= 3) out += '/' + d.substring(2, 4);
+        if (d.length >= 5) out += '/' + d.substring(4, 8);
+        el.value = out;
+      }
+
+      function isValidMDY(str) {
+        if (!/^\d{2}\/\d{2}\/\d{4}$/.test(str)) return false;
+        var p = str.split('/');
+        var m = parseInt(p[0], 10);
+        var day = parseInt(p[1], 10);
+        var y = parseInt(p[2], 10);
+        if (m < 1 || m > 12) return false;
+        var dt = new Date(y, m - 1, day);
+        return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === day;
+      }
+
+      function showErr(fieldId, message) {
+        var err = $('#err-' + fieldId);
+        if (err) {
+          err.textContent = message;
+          err.classList.remove('hidden');
+        }
+      }
+
+      function clearErrors() {
+        $$('[id^="err-"]').forEach(function (el) {
+          el.textContent = '';
+          el.classList.add('hidden');
+        });
+      }
+
+      function clearFeedback() {
+        var fb = $('#submit-feedback');
+        if (fb) {
+          fb.textContent = '';
+          fb.classList.add('hidden');
+        }
+      }
+
+      function validateStepsThrough(maxStep) {
+        var s;
+        for (s = 1; s <= maxStep; s++) {
+          if (!validateStep(s)) {
+            goToStep(s, { skipValidate: true });
+            return false;
+          }
+        }
+        return true;
+      }
+
+      function validateStep(step) {
+        clearErrors();
+        var ok = true;
+        function fail(field, msg) {
+          showErr(field, msg);
+          ok = false;
+        }
+
+        if (step === 1) {
+          var fn = ($('#fullName').value || '').trim();
+          if (!fn) fail('fullName', t('err_required'));
+          var em = ($('#email').value || '').trim();
+          if (!em) fail('email', t('err_required'));
+          else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) fail('email', t('err_email'));
+          var ph = digitsOnly($('#phone').value);
+          if (ph.length !== 10) fail('phone', t('err_phone'));
+          var addr = ($('#insuredAddress').value || '').trim();
+          if (!addr) fail('insuredAddress', t('err_required'));
+          var dob1 = ($('#dob').value || '').trim();
+          if (!dob1) fail('dob', t('err_required'));
+          else if (!isValidMDY(dob1)) fail('dob', t('err_date'));
+          if (!$('#sex').value) fail('sex', t('err_required'));
+          if (!$('#maritalStatus').value) fail('maritalStatus', t('err_required'));
+          var occ1 = ($('#occupation').value || '').trim();
+          if (!occ1) fail('occupation', t('err_required'));
+          var dl = ($('#driverLicense').value || '').trim();
+          if (!dl) fail('driverLicense', t('err_required'));
+        }
+
+        if (step === 2) {
+          var noVin = $('#noVin').checked;
+          if (noVin) {
+            var y = $('#vehicleYear').value;
+            var mk = ($('#vehicleMake').value || '').trim();
+            var md = ($('#vehicleModel').value || '').trim();
+            var yi = parseInt(y, 10);
+            if (!y || String(yi).length !== 4 || yi < 1980 || yi > 2099) fail('vehicleYear', t('err_year'));
+            if (!mk) fail('vehicleMake', t('err_required'));
+            if (!md) fail('vehicleModel', t('err_required'));
+          } else {
+            var vin = ($('#vin').value || '').trim();
+            if (!vin) fail('vin', t('err_vin_ymm'));
+          }
+          if (!$('#primaryUse').value) fail('primaryUse', t('err_required'));
+          var hh = parseInt($('#householdResidents').value, 10);
+          if (!hh || hh < 1) fail('householdResidents', t('err_hh'));
+        }
+
+        if (step === 3) {
+          var h2 = $('#hasSecondVehicle').checked;
+          var h3 = $('#hasThirdVehicle').checked;
+          if (h3 && !h2) {
+            $('#hasSecondVehicle').checked = true;
+            h2 = true;
+            $('#block-second').classList.remove('hidden');
+          }
+          if (h2) {
+            if (!$('#co1Marital').value) fail('co1Marital', t('err_required'));
+            var co1dl = ($('#co1Dl').value || '').trim();
+            if (!co1dl) fail('co1Dl', t('err_required'));
+            var v2 = ($('#vin2').value || '').trim();
+            if (!v2) fail('vin2', t('err_required'));
+            var c1d = ($('#co1Dob').value || '').trim();
+            if (c1d && !isValidMDY(c1d)) fail('co1Dob', t('err_date'));
+          }
+          if (h3) {
+            if (!$('#co2Marital').value) fail('co2Marital', t('err_required'));
+            var co2dl = ($('#co2Dl').value || '').trim();
+            if (!co2dl) fail('co2Dl', t('err_required'));
+            var c2d = ($('#co2Dob').value || '').trim();
+            if (c2d && !isValidMDY(c2d)) fail('co2Dob', t('err_date'));
+          }
+        }
+
+        if (step === 4) {
+          var pe = ($('#policyExpiration').value || '').trim();
+          if (!pe) fail('policyExpiration', t('err_required'));
+          else if (!isValidMDY(pe)) fail('policyExpiration', t('err_date'));
+          var ef = ($('#effectiveDate').value || '').trim();
+          if (!ef) fail('effectiveDate', t('err_required'));
+          else if (!isValidMDY(ef)) fail('effectiveDate', t('err_date'));
+          ['coverageBI', 'coveragePD', 'coverageUMBI', 'coverageUMPD', 'coverageComp', 'coverageColl', 'coverageMedPay'].forEach(function (id) {
+            if (!$('#' + id).value) fail(id, t('err_required'));
+          });
+        }
+
+        if (step === 5) {
+          var creditEl = $('input[name="creditCheck"]:checked');
+          if (!creditEl) fail('creditCheck', t('err_credit'));
+          if (!$('#authorized-hidden').checked) fail('authorized', t('err_required'));
+        }
+
+        return ok;
+      }
+
+      function syncFormDataFromDOM() {
+        var ids = [
+          'fullName',
+          'email',
+          'phone',
+          'insuredAddress',
+          'dob',
+          'sex',
+          'maritalStatus',
+          'occupation',
+          'driverLicense',
+          'vin',
+          'vehicleYear',
+          'vehicleMake',
+          'vehicleModel',
+          'primaryUse',
+          'householdResidents',
+          'co1Name',
+          'co1Dob',
+          'co1Occ',
+          'co1Marital',
+          'co1Dl',
+          'vin2',
+          'vehicle2Use',
+          'co2Name',
+          'co2Dob',
+          'co2Occ',
+          'co2Marital',
+          'co2Dl',
+          'vin3',
+          'vehicle3Use',
+          'priorCarrier',
+          'policyExpiration',
+          'priorPolicyTerm',
+          'effectiveDate',
+          'coverageBI',
+          'coveragePD',
+          'coverageUMBI',
+          'coverageUMPD',
+          'deathIndemnity',
+          'coverageComp',
+          'coverageColl',
+          'coverageTowing',
+          'coverageMedPay',
+          'coverageRental',
+          'specialRequests'
+        ];
+        ids.forEach(function (id) {
+          var el = $('#' + id);
+          if (el) formData[id] = el.type === 'checkbox' ? el.checked : el.value;
+        });
+        formData.noVin = $('#noVin').checked;
+        formData.hasSecondVehicle = $('#hasSecondVehicle').checked;
+        formData.hasThirdVehicle = $('#hasThirdVehicle').checked;
+        var cr = $('input[name="creditCheck"]:checked');
+        formData.creditCheck = cr ? cr.value : '';
+      }
+
+      function updateProgressUI() {
+        $$('#progress-steps .step-dot').forEach(function (btn, idx) {
+          var n = idx + 1;
+          var numEl = btn.querySelector('.step-num');
+          var chkEl = btn.querySelector('.step-check');
+          btn.classList.remove('step-dot--current', 'step-dot--done', 'step-dot--todo');
+          numEl.classList.remove('hidden');
+          chkEl.classList.add('hidden');
+          btn.disabled = n >= currentStep;
+          btn.removeAttribute('aria-current');
+          if (n < currentStep) {
+            btn.classList.add('step-dot--done');
+            numEl.classList.add('hidden');
+            chkEl.classList.remove('hidden');
+          } else if (n === currentStep) {
+            btn.classList.add('step-dot--current');
+            btn.setAttribute('aria-current', 'step');
+          } else {
+            btn.classList.add('step-dot--todo');
+          }
+        });
+        var nav = $('#step-nav');
+        var back = $('#btn-back');
+        var next = $('#btn-next');
+        back.classList.toggle('hidden', currentStep === 1);
+        if (currentStep === 5) {
+          next.classList.add('hidden');
+          nav.classList.add('border-t');
+        } else {
+          next.classList.remove('hidden');
+          next.textContent = t('btn_continue_step').replace('{next}', String(currentStep + 1));
+        }
+      }
+
+      function focusFirstInStep(step) {
+        var panel = $('.step-panel[data-step="' + step + '"]');
+        if (!panel) return;
+        var focusable = panel.querySelector(
+          'input:not([type="hidden"]):not(.visually-hidden), select, textarea, button:not([disabled])'
+        );
+        if (focusable) focusable.focus();
+      }
+
+      function goToStep(target, options) {
+        options = options || {};
+        var skipValidate = options.skipValidate === true;
+        if (!skipValidate && target > currentStep) {
+          if (!validateStep(currentStep)) return;
+        }
+        syncFormDataFromDOM();
+        $$('.step-panel').forEach(function (panel) {
+          panel.classList.remove('active');
+        });
+        var nextPanel = $('.step-panel[data-step="' + target + '"]');
+        if (nextPanel) nextPanel.classList.add('active');
+        currentStep = target;
+        updateProgressUI();
+        applyI18n();
+        focusFirstInStep(target);
+      }
+
+      function firstNameFromFull(full) {
+        var p = (full || '').trim().split(/\s+/);
+        return p[0] || 'Friend';
+      }
+
+      function buildPayload() {
+        syncFormDataFromDOM();
+        var noVin = $('#noVin').checked;
+        var vinVal = ($('#vin').value || '').trim();
+        var year = $('#vehicleYear').value;
+        var make = ($('#vehicleMake').value || '').trim();
+        var model = ($('#vehicleModel').value || '').trim();
+        var vehicleStr = '';
+        if (noVin) {
+          vinVal = '';
+          vehicleStr = [year, make, model].filter(Boolean).join(' ').trim();
+        }
+        var umbi = $('#coverageUMBI').value;
+        var cr = $('input[name="creditCheck"]:checked');
+        return {
+          fullName: ($('#fullName').value || '').trim(),
+          email: ($('#email').value || '').trim(),
+          phone: ($('#phone').value || '').trim(),
+          insuredAddress: ($('#insuredAddress').value || '').trim(),
+          dob: ($('#dob').value || '').trim(),
+          sex: $('#sex').value,
+          maritalStatus: $('#maritalStatus').value,
+          occupation: ($('#occupation').value || '').trim(),
+          driverLicense: ($('#driverLicense').value || '').trim(),
+          vin: vinVal,
+          vehicleDescription: vehicleStr,
+          primaryUse: $('#primaryUse').value,
+          householdResidents: String(parseInt($('#householdResidents').value, 10) || 1),
+          hasSecondVehicle: $('#hasSecondVehicle').checked,
+          co1Name: ($('#co1Name').value || '').trim(),
+          co1Dob: ($('#co1Dob').value || '').trim(),
+          co1Occ: ($('#co1Occ').value || '').trim(),
+          co1Marital: $('#co1Marital').value,
+          co1Dl: ($('#co1Dl').value || '').trim(),
+          vin2: ($('#vin2').value || '').trim(),
+          vehicle2Use: $('#vehicle2Use').value,
+          hasThirdVehicle: $('#hasThirdVehicle').checked,
+          co2Name: ($('#co2Name').value || '').trim(),
+          co2Dob: ($('#co2Dob').value || '').trim(),
+          co2Occ: ($('#co2Occ').value || '').trim(),
+          co2Marital: $('#co2Marital').value,
+          co2Dl: ($('#co2Dl').value || '').trim(),
+          vin3: ($('#vin3').value || '').trim(),
+          vehicle3Use: $('#vehicle3Use').value,
+          priorCarrier: ($('#priorCarrier').value || '').trim(),
+          policyExpiration: ($('#policyExpiration').value || '').trim(),
+          priorPolicyTerm: $('#priorPolicyTerm').value,
+          effectiveDate: ($('#effectiveDate').value || '').trim(),
+          coverageBI: $('#coverageBI').value,
+          coveragePD: $('#coveragePD').value,
+          coverageUMBI: umbi,
+          coverageUMPD: $('#coverageUMPD').value,
+          coverageUM: umbi,
+          deathIndemnity: $('#deathIndemnity').value,
+          coverageComp: $('#coverageComp').value,
+          coverageColl: $('#coverageColl').value,
+          coverageTowing: $('#coverageTowing').value,
+          coverageMedPay: $('#coverageMedPay').value,
+          coverageRental: $('#coverageRental').value,
+          creditCheckAuthorized: cr ? cr.value : '',
+          specialRequests: ($('#specialRequests').value || '').trim(),
+          authorized: $('#authorized-hidden').checked === true
+        };
+      }
+
+      function setSubmitLoading(loading) {
+        var btn = $('#submit-btn');
+        var sp = $('#submit-spinner');
+        var lbl = $('#submit-label');
+        if (loading) {
+          sp.classList.remove('hidden');
+          lbl.textContent = t('btn_submitting');
+          btn.disabled = true;
+        } else {
+          sp.classList.add('hidden');
+          lbl.textContent = getSubmitLabelText();
+          btn.disabled = !$('#authorized-hidden').checked;
+          updateSubmitStyle();
+        }
+      }
+
+      function updateSubmitStyle() {
+        var btn = $('#submit-btn');
+        var on = $('#authorized-hidden').checked;
+        btn.disabled = !on;
+        btn.classList.toggle('submit-cta-on', on);
+        btn.classList.toggle('submit-cta-off', !on);
+      }
+
+      function toggleVinUI() {
+        var noVin = $('#noVin').checked;
+        var vinWrap = $('#vin-wrap');
+        var ymm = $('#ymm-wrap');
+        if (noVin) {
+          vinWrap.classList.add('hidden');
+          $('#vin').value = '';
+          ymm.classList.remove('hidden');
+        } else {
+          vinWrap.classList.remove('hidden');
+          ymm.classList.add('hidden');
+          $('#vehicleYear').value = '';
+          $('#vehicleMake').value = '';
+          $('#vehicleModel').value = '';
+        }
+      }
+
+      function setAuthSwitch(on) {
+        var btn = $('#auth-switch');
+        var cb = $('#authorized-hidden');
+        cb.checked = on;
+        btn.setAttribute('aria-checked', on ? 'true' : 'false');
+        btn.querySelector('.toggle-track').classList.toggle('on', on);
+        updateSubmitStyle();
+        $('#submit-label').textContent = getSubmitLabelText();
+      }
+
+      $('#lang-en').addEventListener('click', function () {
+        setLang('en');
+      });
+      $('#lang-zh').addEventListener('click', function () {
+        setLang('zh');
+      });
+
+      $('#lead-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        clearFeedback();
+        if (currentStep !== 5) {
+          if (currentStep < 5) $('#btn-next').click();
+          return;
+        }
+        if (!validateStepsThrough(5)) return;
+
+        var payload = buildPayload();
+        setSubmitLoading(true);
+
+        var fetchPromise = fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(function (res) {
+          return res.json().then(function (data) {
+            if (!res.ok) throw new Error('bad_status');
+            return data;
+          });
+        });
+
+        Promise.race([
+          fetchPromise,
+          new Promise(function (_, rej) {
+            setTimeout(function () {
+              rej(new Error('timeout'));
+            }, 10000);
+          })
+        ])
+          .then(function (data) {
+            if (data && data.status === 'ok') {
+              var hb = $('#hero-block');
+              if (hb) hb.classList.add('hidden');
+              $('#lead-form').classList.add('hidden');
+              var fn = firstNameFromFull(payload.fullName);
+              $('#success-headline').textContent = t('success_thanks').replace('{name}', fn);
+              $('#success-panel').classList.remove('hidden');
+            } else throw new Error('bad_payload');
+          })
+          .catch(function (err) {
+            var fb = $('#submit-feedback');
+            fb.classList.remove('hidden');
+            if (err && err.message === 'timeout') fb.textContent = t('err_timeout');
+            else fb.textContent = t('err_generic');
+          })
+          .finally(function () {
+            setSubmitLoading(false);
+          });
+      });
+
+      $('#btn-next').addEventListener('click', function (e) {
+        e.preventDefault();
+        if (currentStep >= 5) return;
+        goToStep(currentStep + 1);
+      });
+
+      $('#btn-back').addEventListener('click', function (e) {
+        e.preventDefault();
+        if (currentStep <= 1) return;
+        goToStep(currentStep - 1, { skipValidate: true });
+      });
+
+      $$('#progress-steps [data-step-link]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var n = parseInt(btn.getAttribute('data-step-link'), 10);
+          if (n < currentStep) goToStep(n, { skipValidate: true });
+        });
+      });
+
+      $('#auth-switch').addEventListener('click', function () {
+        setAuthSwitch(!$('#authorized-hidden').checked);
+      });
+
+      $('#authorized-hidden').addEventListener('change', function () {
+        setAuthSwitch(this.checked);
+      });
+
+      $('#phone').addEventListener('input', function () {
+        formatPhoneInput(this);
+      });
+      $$('#dob, #policyExpiration, #effectiveDate').forEach(function (el) {
+        el.addEventListener('input', function () {
+          formatDateInput(this);
+        });
+      });
+      $('#noVin').addEventListener('change', function () {
+        toggleVinUI();
+      });
+
+      function toggleExtraVehicleBlocks() {
+        var h2 = $('#hasSecondVehicle').checked;
+        var h3 = $('#hasThirdVehicle').checked;
+        if (h3 && !h2) {
+          $('#hasSecondVehicle').checked = true;
+          h2 = true;
+        }
+        $('#block-second').classList.toggle('hidden', !h2);
+        $('#block-third').classList.toggle('hidden', !h3);
+      }
+
+      $('#hasSecondVehicle').addEventListener('change', function () {
+        if (!this.checked) {
+          $('#hasThirdVehicle').checked = false;
+        }
+        toggleExtraVehicleBlocks();
+      });
+      $('#hasThirdVehicle').addEventListener('change', function () {
+        toggleExtraVehicleBlocks();
+      });
+
+      $$('#co1Dob, #co2Dob').forEach(function (el) {
+        el.addEventListener('input', function () {
+          formatDateInput(this);
+        });
+      });
+
+      $('#lead-form').addEventListener(
+        'focusin',
+        function (e) {
+          var t = e.target;
+          if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) {
+            t.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        },
+        true
+      );
+
+      applyI18n();
+      updateProgressUI();
+      toggleVinUI();
+      toggleExtraVehicleBlocks();
+      setAuthSwitch(false);
+    </script>
+  </body>
+</html>
